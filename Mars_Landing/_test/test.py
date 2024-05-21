@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.colors as mcolors
 
 
 
@@ -67,29 +68,20 @@ def add_plot():
         [(0, 4000), (1000, 3500), (2000, 3000), (3000, 4500), (4000, 3000), (6999, 4500)],
     ]
     x0, y0 = zip(*land)
-    plt.title("Plot Land")
-    plt.xlim(8000)
-    plt.ylim(5000)
-    plt.margins(100)
 
     fig, ax = plt.subplots()
     line, = ax.plot(x0, y0, color='k')
-    plt.ion()
+    fig.ion()
+    fig.title("Plot Land")
+    plt.xlim(8000)
+    plt.ylim(5000)
+    plt.margins(100)
     plt.show()
     plt.pause(1)
 
     for path in all_path:
         x, y = zip(*path)
-        ax.plot([], [])
-        size = frame_size
-        while(size < len(x)):
-            ax.lines[-1].set_xdata(x[:size])
-            ax.lines[-1].set_ydata(y[:size])
-            plt.draw()
-            plt.pause(0.5)
-            size += frame_size
-        ax.lines[-1].set_xdata(x)
-        ax.lines[-1].set_ydata(y)
+        ax.plot(x, y)
         plt.draw()
         plt.pause(1)
 
@@ -98,10 +90,30 @@ def add_plot():
         if len(ax.collections) > 2:
             ax.collections[1].remove()
 
-    while len(ax.lines) > 1:
-        ax.lines[1].remove()
-        if len(ax.collections) > 0:
-            ax.collections[1].remove()
+    # for path in all_path:
+    #     x, y = zip(*path)
+    #     ax.plot([], [])
+    #     size = frame_size
+    #     while(size < len(x)):
+    #         ax.lines[-1].set_xdata(x[:size])
+    #         ax.lines[-1].set_ydata(y[:size])
+    #         plt.draw()
+    #         plt.pause(0.5)
+    #         size += frame_size
+    #     ax.lines[-1].set_xdata(x)
+    #     ax.lines[-1].set_ydata(y)
+    #     plt.draw()
+    #     plt.pause(1)
+
+    #     if len(ax.lines) > 2:
+    #         ax.lines[1].remove()
+    #     if len(ax.collections) > 2:
+    #         ax.collections[1].remove()
+
+    # while len(ax.lines) > 1:
+    #     ax.lines[1].remove()
+    #     if len(ax.collections) > 0:
+    #         ax.collections[1].remove()
 
 def ani_plot():
     land = [(0, 1000), (300, 1500), (350, 1400), (500, 2000), (800, 1800), (1000, 2500), (1200, 2100), (1500, 2400), (2000, 1000), (2200, 500), (2500, 100), (2900, 800), (3000, 500), (3200, 1000), (3500, 2000), (3800, 800), (4000, 200), (5000, 200), (5500, 1500), (6999, 2800)]
@@ -141,42 +153,59 @@ def animation_plot():
         [(0, 3000), (800, 3800), (1500, 3500), (2500, 2000), (3800, 2100), (6999, 3500) ],
         [(0, 4000), (1000, 3500), (2000, 3000), (3000, 4500), (4000, 3000), (6999, 4500)] ]
 
+    lines = []
     x0, y0 = zip(*land)
+    colors = []
+
+    def get_color(colors):
+        if len(colors) == 0:
+            colors = list(mcolors.TABLEAU_COLORS.values())
+        color = colors.pop()
+        return colors, color
 
     fig, ax = plt.subplots()
     line, = ax.plot(x0, y0, color='k')
+    ax.title.set_text('Plot land')
+    ax.set_xlim([0, 8000]) 
+    ax.set_ylim([0, 5000])
     plt.ion()
-    plt.title("Plot Land")
-    plt.xlim(0,8000) 
-    plt.ylim(0,5000)
-    plt.margins(0.2)
-
+    plt.show()
     # plt.show(blocked=False)
     # plt.pause(1)
 
-    def animate(line, x, y):
+    def update(num, x, y, line):
+        line.set_data(x[:num], y[:num])
+
+        return line
+
+
+    def animate(i, x, y):
         ax.plot(x,y)
 
     for path in all_path:
         x, y = zip(*path)
-        ani = animation.FuncAnimation(
-            fig,
-            animate, fargs=[x, y],
-            frames=None,
-            interval=10, repeat=False)
+        colors, color = get_color(colors)
+        line, = ax.plot([], [], color=color)
+        lines.append(line)
+        ani = animation.FuncAnimation(fig, func=update, frames=len(x)+1, fargs=[x, y, line],
+                                    blit = False, interval = 10, repeat = False)
+        # ani = animation.FuncAnimation(
+        #     fig,
+        #     update, fargs=[x, y, line],
+        #     frames=None,
+        #     repeat=False)
+            # interval=10, repeat=False)
         plt.draw()
         plt.pause(1)
 
-        if len(ax.lines) > 2:
-            ax.lines[1].remove()
-        if len(ax.collections) > 2:
-            ax.collections[1].remove()
+        if len(lines) > 2:
+            lines[0].remove()
+            lines.pop(0)
 
-    while len(ax.lines) > 1:
-        ax.lines[0].remove()
-        if len(ax.collections) > 0:
-            ax.collections[0].remove()
-        plt.pause(1)
+    while len(lines) > 0:
+            lines[0].remove()
+            lines.pop(0)
+    input("Press ENTER to stop")
 
 def plot_without_ani():
     land = [(0, 1000), (300, 1500), (350, 1400), (500, 2000), (800, 1800), (1000, 2500), (1200, 2100), (1500, 2400), (2000, 1000), (2200, 500), (2500, 100), (2900, 800), (3000, 500), (3200, 1000), (3500, 2000), (3800, 800), (4000, 200), (5000, 200), (5500, 1500), (6999, 2800)]
@@ -187,9 +216,12 @@ def plot_without_ani():
         [(0, 4000), (1000, 3500), (2000, 3000), (3000, 4500), (4000, 3000), (6999, 4500)],
     ]
 
-    plt.plot(land)
+    plt.xlim = 7000
+    plt.ylim = 5000
     plt.title("Plot the land")
     plt.margins(0.2)
+    x, y = zip(*land)
+    line = plt.plot(x, y, linestyle='solid')
     plt.ion()
     plt.show()
     plt.pause(5)
@@ -197,17 +229,18 @@ def plot_without_ani():
     plt.title("Plot path")
     for path in all_path:
         x, y = zip(*path)
-        line = plt.plot(x, y, linestyle='solid')
+        plt.plot(x, y, linestyle='solid')
         plt.draw()
-        plt.pause(5)
+        plt.pause(2)
         if len(line) > 2:
             l = line.pop(1)
             l.remove()
             plt.title("Removed extra lines")
             plt.draw()
-            plt.pause(5)
+            plt.pause(2)
     input("Press [enter] to continue.")
 
-
 if __name__ == '__main__':
-    plot_without_ani()
+    # plot_without_ani()
+    # add_plot()
+    animation_plot()
