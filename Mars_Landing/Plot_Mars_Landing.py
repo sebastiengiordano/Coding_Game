@@ -49,7 +49,8 @@ class Plot_Mars_Landing:
         return color
 
     def _update(self, num, x, y, line):
-        line.set_data(x[:num], y[:num])
+        frame = max(len(x)//10, 1)
+        line.set_data(x[:num*frame], y[:num*frame])
         return line
 
     def set_land(self, land: list=None):
@@ -74,8 +75,12 @@ class Plot_Mars_Landing:
             color = self._get_color()
             line, = self._ax.plot([], [], color=color)
             self._lines.append(line)
-            ani = animation.FuncAnimation(self._fig, func=self._update, frames=len(x)+1, fargs=[x, y, line],
-                                        blit = False, interval = min(len(x)*10, 200), repeat = False)
+            ani = animation.FuncAnimation(
+                    self._fig,
+                    func=self._update,
+                    fargs=[x, y, line],
+                    interval = 10,
+                    blit = False, repeat = False )
             plt.draw()
             plt.pause(.5)
 
@@ -86,23 +91,20 @@ class Plot_Mars_Landing:
 
 
 if __name__ == '__main__':
-    land = [(0, 1000), (300, 1500), (350, 1400), (500, 2000), (800, 1800), (1000, 2500), (1200, 2100), (1500, 2400), (2000, 1000), (2200, 500), (2500, 100), (2900, 800), (3000, 500), (3200, 1000), (3500, 2000), (3800, 800), (4000, 200), (5000, 200), (5500, 1500), (6999, 2800)]
-    all_path = [
-        [(0, 1000), (800, 2800), (1500, 2500), (2500, 1000), (3800, 1100), (6999, 3000)],
-        [(0, 2000), (1000, 2500), (2000, 2000), (3000, 3500), (4000, 2000), (6999, 5000)],
-        [(0, 3000), (800, 3800), (1500, 3500), (2500, 2000), (3800, 2100), (6999, 3500)],
-        [(0, 4000), (1000, 3500), (2000, 3000), (3000, 4500), (4000, 3000), (6999, 4500)],
-    ]
-    Lcarte =([0, 450], [300, 750], [1000, 450], [1500, 650], [1800, 850], [2000, 1950], [2200, 1850], [2400, 2000], [3100, 1800], [3150, 1550], [2500, 1600], [2200, 1550], [2100, 750], [2200, 150], [3200, 150], [3500, 450], [4000, 950], [4500, 1450], [5000, 1550], [5500, 1500], [6000, 950], [6999, 1750])
-
+    from _test.FuncAnim_data import land, all_path, Lcarte, Large_Curve, LCurve
 
     # Init Land
     plot_mars_landing = Plot_Mars_Landing(land)
-    plot_mars_landing.nb_displayed_curves = 2
-    # Animate some curves
+    plot_mars_landing.nb_displayed_curves = 3
+    # # Animate some curves
+    plot_mars_landing.animate(all_path)
+    # # Change of map
+    plot_mars_landing.set_land(Lcarte)
+    # # Animate some curves
+    plot_mars_landing.animate(all_path)
     plot_mars_landing.animate(all_path)
     # Change of map
-    plot_mars_landing.set_land(Lcarte)
-    # Animate some curves
-    plot_mars_landing.animate(all_path)
-    plot_mars_landing.animate(all_path)
+    plot_mars_landing.set_land(land)
+    # Animate large curve
+    plot_mars_landing.animate([Large_Curve, LCurve])
+    plt.pause(10)
