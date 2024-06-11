@@ -2,7 +2,7 @@
 from random import randint
 from math import cos, sin, radians
 
-from Plot_Mars_Landing import Plot_Mars_Landing
+from Mars_Landing.Plot_Mars_Landing import Plot_Mars_Landing
 
 
 K_NB_GENE = 1000
@@ -51,6 +51,7 @@ class Population():
 
 
 class My_Map():
+
     def __init__(self) -> None:
         # Contraintes
         # 2 ≤ surfaceN < 30
@@ -102,6 +103,8 @@ class Movement():
         self.y       = y
         self.h_speed = h_speed
         self.v_speed = v_speed
+        self.h_speed_prec = h_speed
+        self.v_speed_prec = v_speed
         self.fuel    = fuel
         self.rotate  = rotate
         self.power   = power
@@ -126,19 +129,34 @@ class Movement():
         power_min = max(self.power - 1, 0)
         power_max = min(self.power + 1, 4)
         self.power = max(min(power, power_max), power_min)
+        self.fuel -= self.power
 
     def _set_speed(self):
         # -500 < hSpeed, vSpeed < 500
-        h_acceleration = round(cos(radians(self.rotate)) * self.power)
-        v_acceleration = round(-sin(radians(self.rotate)) * self.power)
+        v_acceleration = cos(radians(self.rotate)) * self.power
+        h_acceleration = -sin(radians(self.rotate)) * self.power
         # Since one turn correspond to 1s, the new speed is obtain by addind acceleration
-        self.h_speed = int( min( max( self.h_speed + h_acceleration,         -500 ), 500 ) )
-        self.v_speed = int( min( max( self.v_speed + v_acceleration - 3.711, -500 ), 500 ) )
+        self.h_speed = min( max( self.h_speed + h_acceleration,         -500 ), 500 )
+        self.v_speed = min( max( self.v_speed + v_acceleration - 3.711, -500 ), 500 )
 
     def _set_position(self):
-        # Since one turn correspond to 1s, the new position is obtain by addind speed
-        self.x = self.x + self.h_speed
-        self.y = self.y + self.v_speed
+        # Since one turn correspond to 1s, the new position is obtain by addind integrated speed
+        self.x += (self.h_speed + self.h_speed_prec) / 2
+        self.y += (self.v_speed + self.v_speed_prec) / 2
+        self.h_speed_prec = self.h_speed
+        self.v_speed_prec = self.v_speed
+
+    def get_x(self):
+        return round(self.x)
+
+    def get_y(self):
+        return round(self.y)
+
+    def get_h_speed(self):
+        return round(self.h_speed)
+
+    def get_v_speed(self):
+        return round(self.v_speed)
 
 
 if __name__ == '__main__':
@@ -170,8 +188,8 @@ if __name__ == '__main__':
     # -45 4 (rotate power)
     mov.command(-45, 4)
     print(f"Next position expected x = 4950, y = 2498 => "
-          f"\n\t Test x {'OK' if mov.x == 4950 else f'FAIL x = {mov.x}'}"
-          f"\n\t Test y {'OK' if mov.y == 2498 else f'FAIL y = {mov.y}'}")
+          f"\n\t Test x {'OK' if mov.get_x() == 4950 else f'FAIL x = {mov.get_x()}'}"
+          f"\n\t Test y {'OK' if mov.get_y() == 2498 else f'FAIL y = {mov.get_y()}'}")
     # Nouvel angle demandé vers la droite, poussée des fusées au max
     # Entrée pour le tour 2
     # 4950 2498 -51 -3 999 75 1 (X Y hSpeed vSpeed fuel rotate power)
@@ -180,8 +198,8 @@ if __name__ == '__main__':
     # -45 4 (rotate power)
     mov.command(-45, 4)
     print(f"Next position expected x = 4898, y = 2493 => "
-          f"\n\t Test x {'OK' if mov.x == 4898 else f'FAIL x = {mov.x}'}"
-          f"\n\t Test y {'OK' if mov.y == 2493 else f'FAIL y = {mov.y}'}")
+          f"\n\t Test x {'OK' if mov.get_x() == 4898 else f'FAIL x = {mov.get_x()}'}"
+          f"\n\t Test y {'OK' if mov.get_y() == 2493 else f'FAIL y = {mov.get_y()}'}")
     # Même demande que précedemment
     # Entrée pour le tour 3
     # 4898 2493 -53 -6 997 60 2 (X Y hSpeed vSpeed fuel rotate power)
