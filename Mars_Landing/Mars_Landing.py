@@ -88,6 +88,14 @@ class My_Map():
                 self.land_y = self.land[i][1]
                 break
 
+    def is_crash(self, x, y, x_prec, y_prec):
+        pass
+
+    def ccw(self, A,B,C):
+	    return (C.y-A.y)*(B.x-A.x) > (B.y-A.y)*(C.x-A.x)
+
+    def intersect(self, A,B,C,D):
+	    return self.ccw(A,C,D) != self.ccw(B,C,D) and self.ccw(A,B,C) != self.ccw(A,B,D)
 
 class Movement():
 
